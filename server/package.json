@@ -1,0 +1,44 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsx --test src/**/*.test.ts",
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.20.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+<<<<<<< HEAD
+=======
+    "jsonwebtoken": "^9.0.3",
+>>>>>>> 0a00a263953ab13e0c5ba1267330ca024156d55c
+    "mongoose": "^9.11.2",
+    "multer": "^2.4.0",
+    "socket.io": "^4.8.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+<<<<<<< HEAD
+=======
+    "@types/jsonwebtoken": "^9.0.10",
+>>>>>>> 0a00a263953ab13e0c5ba1267330ca024156d55c
+    "@types/multer": "^2.3.0",
+    "@types/node": "^26.6.5",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

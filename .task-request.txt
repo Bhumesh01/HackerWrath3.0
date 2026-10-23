@@ -1,0 +1,539 @@
+# Codex Task: Rebuild KAALI Frontend Using Saheli Safety as the UI Reference
+
+## Role
+
+Act as a senior frontend engineer and product designer. Rebuild the KAALI women's safety application frontend using the uploaded `Hackerwrath3.0Frontend-main` (Saheli Safety) project as the visual and product-experience reference.
+
+The objective is to create a polished, responsive, production-minded React application that preserves the most useful UX patterns from Saheli while integrating with the **existing KAALI backend services and API contracts**.
+
+This is an existing full-stack project. Do not start a new backend, duplicate existing services, or replace working backend functionality with frontend simulations.
+
+---
+
+## 1. First inspect both projects
+
+Before modifying anything, inspect the repository structure, source files, configuration, existing frontend, backend routes, validators, controllers, services, models, environment files, and API documentation.
+
+Reference frontend:
+- `Hackerwrath3.0Frontend-main/`
+- Important reference files: `public/index.html`, `public/styles.css`, `public/app.js`, `README.md`
+
+Existing KAALI project:
+- `client/`
+- `server/`
+- `intelligence/`
+- `emergency_sos/`
+- `deepfake_algo/`
+- `HashShield/`
+- `docs/api-design.md`
+- `docs/KAALI_PRD_SYSTEM_DESIGN.md`
+
+Use the actual directory names present in the workspace. If the reference project and KAALI are in separate directories, inspect both before implementation.
+
+Read the existing API contract and implementation together. Where documentation and code disagree, use the implemented, validated public API as the source of truth and report the discrepancy.
+
+Produce a short implementation plan, then proceed with the implementation. Do not stop after producing the plan.
+
+## 2. Mandatory technology stack
+
+Use the existing KAALI frontend stack:
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- MapLibre GL JS
+- Axios
+- React Router if routing between application screens is needed
+
+Use the existing `client/package.json` and project configuration.
+
+Do not migrate to plain HTML/JavaScript, Next.js, another CSS framework, or a different map library.
+
+Do not replace the existing Vite project or unnecessarily recreate its configuration.
+
+You may install a small number of additional frontend dependencies when genuinely needed, but first check whether the required functionality can be implemented using the existing dependencies.
+
+Keep TypeScript strict and resolve type errors rather than suppressing them with `any`, `@ts-ignore`, or unsafe casts.
+
+## 3. Design direction: reproduce the Saheli experience, adapted to KAALI
+
+Use Saheli as the primary reference for layout, information hierarchy, and user experience. Do not simply copy its source code line by line.
+
+Create a distinctive, premium, calm, reassuring women's safety interface.
+
+### Visual language
+
+- Warm off-white or ivory backgrounds.
+- Deep forest-green primary accents.
+- Muted sage secondary colors.
+- Restrained coral or red for emergency actions.
+- Soft neutral borders, subtle shadows and generous spacing.
+- Rounded cards, clear typography and readable text.
+- Clean, carefully aligned icons.
+- Strong contrast for safety-critical controls.
+- Subtle transitions and useful loading feedback.
+
+Avoid generic AI-generated dashboard aesthetics, excessive gradients, excessive glassmorphism, neon colors, unnecessary animations, and oversized decorative headings.
+
+Use Lucide React only if needed for a consistent icon system. Never use emoji as a substitute for functional interface icons.
+
+### Application shell
+
+Create a responsive application layout with:
+
+**Desktop**
+- A persistent left sidebar.
+- KAALI branding and a clear safety-oriented identity.
+- Main navigation.
+- A large interactive safety map.
+- A route-planning and route-comparison panel.
+- A visible SOS action.
+- A profile or account area.
+
+**Mobile**
+- A mobile-first, touch-friendly layout.
+- Map-first navigation.
+- A compact header and suitable bottom navigation or drawer.
+- Route details presented in a bottom sheet or compact panel.
+- A clearly accessible SOS action that does not obscure normal navigation.
+- Appropriate safe-area spacing and responsive controls.
+
+Use the Saheli interface's organization as inspiration, but use KAALI branding throughout. Do not leave any Saheli branding or unrelated project names in the finished interface.
+
+## 4. Main screens and navigation
+
+Implement the following screens using reusable React components.
+
+### A. Safety Map — primary screen
+
+This is the most important screen and must receive the most attention.
+
+Include:
+- Interactive MapLibre map.
+- Origin and destination fields.
+- Address or place selection if a compatible geocoding provider is configured.
+- A button to use the current GPS position.
+- A control to swap origin and destination.
+- Walking-route preference.
+- Route priority selection: Fastest, Balanced, Lower Risk.
+- Route comparison cards.
+- Distance and estimated duration.
+- Risk score and risk status.
+- Risk confidence, where supplied by the backend.
+- Warnings and explanations supplied by the API.
+- Start navigation, reroute and finish navigation controls.
+- Current GPS position marker.
+- Origin and destination markers.
+- A clear loading, empty, error and unavailable-data state.
+
+The map must display actual route geometry returned by the KAALI API. Never fabricate route coordinates or risk scores.
+
+When multiple routes are returned, let the user select between them and update the map to display the selected route.
+
+Distinguish the recommended route from other candidates without implying that any route is guaranteed safe.
+
+### B. Route comparison
+
+Create well-designed route cards that display the information actually returned by KAALI.
+
+For each route, show available fields such as:
+- Distance.
+- Estimated duration.
+- Risk score.
+- Risk status.
+- Risk confidence.
+- Risk label.
+- Warnings.
+- Selected or recommended status.
+
+Handle all risk states correctly:
+
+- `measured`
+- `estimated`
+- `unknown`
+
+If `riskScore` is `null`, show that the risk is unknown or insufficiently assessed. Do not convert missing information into zero risk, green safety badges, or a claim that the route is safe.
+
+If confidence or supporting information is missing, do not invent it.
+
+Clearly explain that a report-derived score is an indicator based on available information, not a probability of harm or a guarantee of safety.
+
+### C. Live navigation
+
+Build a usable navigation interface around the existing KAALI navigation APIs.
+
+Include:
+- Active route and selected route information.
+- Current GPS marker and route line.
+- Distance and ETA information where available.
+- Route deviation feedback.
+- Rerouting progress and result.
+- A finish-navigation action.
+- Location permission and GPS failure messages.
+- Network and backend failure recovery.
+
+Use browser geolocation with explicit user permission.
+
+Use the existing navigation-session API to create and manage sessions. Send location updates according to the existing backend's rate limits and interval hints.
+
+Do not assume a WebSocket or Socket.IO service exists. Follow the repository's implemented HTTP-based navigation flow.
+
+Avoid sending GPS updates excessively. Clean up geolocation watchers and pending work when navigation ends or the component unmounts.
+
+### D. Emergency SOS
+
+Create a dedicated emergency interaction accessible from the main application.
+
+Include:
+- A prominent SOS button.
+- A deliberate confirmation or activation flow that avoids accidental triggering without introducing dangerous delays.
+- Current location capture, when permission is available.
+- An explicit indication of the location that will be shared.
+- An option to request live-location sharing when supported.
+- Emergency incident status.
+- Notification delivery status as returned by the backend.
+- An option to retry notifications if the API supports it.
+- A way to resolve or cancel an incident according to the actual backend contract.
+- Clear handling of unavailable GPS, network failures and missing trusted contacts.
+
+Use KAALI's actual SOS service, including its incident lifecycle and notification orchestration.
+
+Generate and send the required idempotency key for SOS creation if the API requires an `Idempotency-Key` header.
+
+Never display "SMS sent", "contact notified", or "police contacted" unless the actual service response supports that statement.
+
+A queued notification is not the same as a delivered notification. Represent notification states honestly.
+
+Do not invent a police-dispatch integration.
+
+### E. Trusted Circle
+
+Implement a trusted-contact management screen using KAALI's existing contact APIs.
+
+Support the operations actually implemented by the backend, such as:
+- Listing contacts.
+- Adding a trusted contact.
+- Showing invitation status.
+- Updating contact information and notification preferences.
+- Removing a contact.
+- Handling invitation acceptance where appropriate.
+
+Show the returned invitation token or link when the backend supplies it, with an explicit copy action.
+
+Do not assume a contact is verified or accepted merely because it has been created.
+
+Respect the backend's authentication, authorization, validation and invitation rules.
+
+### F. Community safety reports
+
+Build a safety-report interface using KAALI's existing reports API.
+
+Support:
+- Viewing reports on the map when the API permits.
+- Submitting a report with the exact fields accepted by the backend.
+- Selecting or capturing a location.
+- Displaying report category, severity and available timestamps.
+- Confirming an existing report when supported.
+- Retracting a user's own report when supported.
+- Showing pending or other moderation status only when returned by the API.
+
+Do not claim that newly submitted reports immediately influence route ranking. The current routing implementation may only use approved, moderated reports.
+
+Do not add fake report markers, fake incident counts, or fabricated community statistics.
+
+### G. Account and authentication
+
+Use KAALI's existing OTP-based authentication.
+
+Implement:
+- Phone or email destination selection, according to the supported contract.
+- Request OTP.
+- Verify OTP.
+- Store the access token safely using an approach compatible with the existing backend and application constraints.
+- Restore the authenticated UI appropriately.
+- Fetch the authenticated user's profile.
+- Update profile fields supported by the API.
+- Logout.
+
+Follow the exact request and response schemas in the existing validators and controllers.
+
+Do not hardcode an OTP or create a fake successful login.
+
+Handle token expiry, unauthorized responses, validation failures, rate limiting and network errors.
+
+Never expose secrets or internal service credentials in frontend environment variables.
+
+### H. Image protection and additional tools
+
+Inspect the existing deepfake and HashShield services before deciding how to expose them.
+
+The KAALI API documentation currently indicates that a public deepfake detection endpoint and Socket.IO service are not implemented. Do not invent these integrations or pretend that the standalone services are already connected.
+
+If a feature is not accessible through a real, documented API, either:
+1. Implement the UI only as an explicitly marked, non-functional placeholder; or
+2. Leave it out of the main navigation until its backend integration is ready.
+
+Prefer the second option if the unfinished feature would confuse users or undermine trust.
+
+Do not send private images to a third party without an explicit, informed user action.
+
+## 5. Backend integration is mandatory
+
+The existing KAALI backend must remain the source of truth for authentication, routing, reports, navigation sessions, trusted contacts and SOS incidents.
+
+Use the configured frontend API URL:
+
+`VITE_API_URL=http://localhost:5000/api/v1`
+
+Use `import.meta.env.VITE_API_URL` rather than hardcoding URLs throughout the application.
+
+Create a centralized Axios client with:
+- Base URL configuration.
+- JSON request and response handling.
+- Bearer-token attachment for authenticated endpoints.
+- Request timeouts.
+- Consistent API error handling.
+- Safe handling of expired or invalid authentication.
+- Typed response envelopes.
+
+Follow the existing API envelope:
+
+`{ data, meta }`
+
+Follow the existing error envelope:
+
+`{ error: { code, message, details, requestId } }`
+
+Do not assume every endpoint returns the same status code or a non-empty response body. Handle successful empty responses, including HTTP 204 where applicable.
+
+Read the backend's actual route files, controllers, validators and services before implementing each API call.
+
+### Existing public API areas
+
+Use the existing endpoints under `/api/v1` where implemented:
+
+**Authentication**
+- `POST /auth/otp`
+- `POST /auth/verify`
+- `POST /auth/logout`
+
+**User profile**
+- `GET /users/me`
+- `PATCH /users/me`
+
+**Trusted contacts**
+- `GET /contacts`
+- `POST /contacts`
+- `PATCH /contacts/:contactId`
+- `DELETE /contacts/:contactId`
+- `POST /contacts/:contactId/accept`
+
+**Routing**
+- `POST /routes`
+- `GET /routes/:routeRequestId`
+- `POST /routes/:routeRequestId/feedback`
+
+**Navigation**
+- `POST /navigation/sessions`
+- `GET /navigation/sessions/active`
+- `GET /navigation/sessions/:sessionId`
+- `POST /navigation/sessions/:sessionId/location`
+- `POST /navigation/sessions/:sessionId/reroute`
+- `PATCH /navigation/sessions/:sessionId/sharing`
+- `POST /navigation/sessions/:sessionId/finish`
+
+**SOS**
+- `POST /sos`
+- `GET /sos/:incidentId`
+- `POST /sos/:incidentId/location`
+- `POST /sos/:incidentId/resolve`
+- `POST /sos/:incidentId/share/revoke`
+- `POST /sos/:incidentId/notify-again`
+
+**Community reports**
+- `GET /reports`
+- `POST /reports`
+- `POST /reports/:reportId/confirm`
+- `POST /reports/:reportId/retract`
+
+**Live-location sharing**
+- `GET /share`
+- `GET /share/:token`
+
+These are endpoint families, not permission to guess request bodies or query parameters. Inspect the exact schemas and controllers before coding. Some routes require authentication; the share endpoint uses its own token-based authorization mechanism.
+
+For any feature whose exact contract differs from this list, follow the implementation in the repository.
+
+## 6. Routing API integration
+
+The route request contract uses coordinate objects:
+
+- `origin: { latitude, longitude }`
+- `destination: { latitude, longitude }`
+- `mode: "walking"`
+- `priority: "fastest" | "balanced" | "lower_risk"`
+- `maxDetourRatio`, where supported.
+
+Inspect the validator and route service to confirm all required and optional fields.
+
+The API returns route candidates with fields such as:
+- `routeId`
+- `distanceMeters`
+- `durationSeconds`
+- `riskScore`
+- `riskStatus`
+- `riskConfidence`
+- `riskScale`
+- `riskLabel`
+- `geometry`
+- `warnings`
+
+Use the real response type and validate assumptions against the implementation.
+
+MapLibre GeoJSON geometry uses `[longitude, latitude]` coordinate order. Do not reverse the coordinates.
+
+Respect the returned `selectedRouteId`. Allow the user to choose another returned candidate without incorrectly treating the original recommendation as the user's selection.
+
+If the service returns no usable candidates or an error, display a helpful recovery state rather than drawing a fabricated fallback route.
+
+The current backend validates coordinates against a configurable pilot-area bounding box. Preserve this behavior and communicate unsupported-area errors to the user.
+
+Do not change the MongoDB report schema, routing service, scoring logic, pilot-area configuration, or backend contracts just to make the frontend easier to build.
+
+If the backend needs a change, document the exact gap and keep it separate from the frontend work unless the change is explicitly necessary and can be implemented without breaking existing behavior.
+
+## 7. Map implementation
+
+Use the existing `KaaliMap.tsx` and MapLibre GL JS.
+
+Improve or refactor the existing map implementation as needed rather than creating a second competing map system.
+
+Requirements:
+- Load the style from `VITE_MAP_STYLE_URL`.
+- Provide a helpful error if the style is missing or unavailable.
+- Show visible map attribution.
+- Display real route geometry returned by the backend.
+- Display start, destination and current-position markers.
+- Support route selection and map fitting.
+- Use distinct styling for the selected route and alternative candidates when their geometries are available.
+- Ensure resizing works on desktop and mobile.
+- Clean up map instances, listeners, markers and observers.
+- Avoid recreating the map on every React render.
+- Do not assume MapLibre provides geocoding, map tiles or routing by itself.
+
+If address search is added, configure a real geocoding provider, respect its usage policy and rate limits, and never silently substitute a different destination.
+
+## 8. Code architecture
+
+Create a maintainable component and service structure. A possible structure is:
+
+`client/src/`
+- `components/layout/`
+- `components/map/`
+- `components/routes/`
+- `components/navigation/`
+- `components/sos/`
+- `components/contacts/`
+- `components/reports/`
+- `components/ui/`
+- `pages/`
+- `services/api.ts`
+- `services/auth.ts`
+- `services/routes.ts`
+- `services/navigation.ts`
+- `services/sos.ts`
+- `services/contacts.ts`
+- `services/reports.ts`
+- `hooks/`
+- `types/`
+- `App.tsx`
+- `KaaliMap.tsx`
+- `index.css`
+
+Adapt this structure to the actual project instead of moving files unnecessarily.
+
+Keep business logic out of large JSX components. Use typed API services, reusable components, focused hooks and explicit loading/error states.
+
+Avoid duplicated API logic and unnecessary global state libraries.
+
+Use accessible labels, keyboard interaction, semantic HTML, visible focus states and appropriately sized touch targets.
+
+## 9. Privacy and safety requirements
+
+This application handles sensitive location and emergency information.
+
+- Request geolocation permission only when the user initiates a location-dependent feature.
+- Explain when location is being shared.
+- Stop GPS tracking when navigation ends or the user revokes permission.
+- Do not put sensitive location data, OTPs, private images or emergency tokens into application logs.
+- Do not expose access tokens or private sharing tokens in analytics, error messages or URLs unnecessarily.
+- Do not store more sensitive information in browser storage than required.
+- Follow existing backend authorization and retention behavior.
+- Never trust frontend checks as a replacement for backend authorization.
+- Never show a green "safe" status solely because no reports exist.
+- Distinguish unknown, unavailable, estimated and measured information.
+- Do not fabricate emergency dispatch, contact delivery, crime statistics or safety claims.
+
+## 10. Environment and deployment
+
+Preserve the existing environment configuration.
+
+The frontend uses:
+- `VITE_API_URL`
+- `VITE_MAP_STYLE_URL`
+- `VITE_ROUTE_DEVIATION_THRESHOLD_METERS`, where used.
+
+Do not place backend secrets in Vite environment variables. Any `VITE_` variable is exposed to the browser.
+
+Do not overwrite `.env` files or commit secrets.
+
+Check the existing backend CORS configuration and keep the frontend's local development URL compatible with it.
+
+Do not change backend ports or service URLs without a clear reason.
+
+The application should work locally with the existing KAALI backend services running.
+
+## 11. Testing and completion criteria
+
+After implementing the frontend:
+
+1. Run `npm install` if dependency changes require it.
+2. Run `npm run build`.
+3. Run `npm run lint`.
+4. Fix TypeScript, build and lint errors introduced by your changes.
+5. Run relevant existing tests if the project provides them.
+6. Verify the application starts with `npm run dev`.
+7. Test API error handling and unauthenticated states.
+8. Test route requests, candidate selection and map rendering using real API responses.
+9. Test unknown risk and missing geometry cases.
+10. Test geolocation permission denial, GPS errors and navigation cleanup.
+11. Test SOS request failures, idempotency and the actual notification status returned by the server.
+12. Test responsive layouts on mobile and desktop.
+
+Do not report a test as passed unless it was actually executed.
+
+If a test cannot be executed because MongoDB, a routing provider, an environment variable or an external service is unavailable, state the exact blocker.
+
+Do not modify unrelated backend files merely to make frontend tests pass.
+
+## 12. Final deliverable
+
+Implement the frontend, not just a mockup or a design proposal.
+
+At completion, provide:
+- A summary of the screens and components implemented.
+- The files created and modified.
+- The existing KAALI API endpoints integrated.
+- Any backend functionality that remains unavailable or unintegrated.
+- Environment variables and provider configuration still required.
+- Build, lint and test results, clearly distinguishing executed tests from untested assumptions.
+- Exact commands for running the frontend and backend together.
+
+## Final instruction
+
+Prioritize a cohesive, beautiful and functional Safety Map experience first, followed by live navigation, trusted contacts, community reports and SOS.
+
+Use the uploaded Saheli project as the UX reference, but preserve KAALI's React/Vite/TypeScript/Tailwind/MapLibre stack and existing backend services.
+
+**Do not rebuild the backend. Do not replace KAALI's APIs with Saheli's SQLite server. Do not fake API responses. Do not fabricate safety data. Inspect, implement, integrate, test and report honestly.**
